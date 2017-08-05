@@ -25,7 +25,7 @@ import errno
 import re
 
 #some variables we'll need defined later
-_default_arch = ""
+_default_arch = "x86_64"
 _osx_version = 0.0
 _target = '10.8'
 
@@ -85,47 +85,6 @@ class _getenv(jhbuild.commands.Command):
         print os.environ[var]
 
 jhbuild.commands.register_command(_getenv)
-
-# Determine the native system:
-def osx_ver():
-    global _default_arch, _osx_version, _target
-    vstring = _popen("uname -r")
-    mstring = _popen("machine")
-    exp = re.compile(r'(\d+\.\d+)\.\d+')
-    vernum = exp.match(vstring)
-    _osx_version = float(vernum.group(1)) - 4.0
-    _target = '10.%d' % int(_osx_version)
-    
-    x64bit = _popen("sysctl hw.cpu64bit_capable").endswith("1")
-    if x64bit and _osx_version >= 6.0:
-        _default_arch = "x86_64"
-    else:
-        _default_arch = "i386"
-
-# Determine the XCode Version:
-def xcode_ver():
-   devdir = _popen("xcode-select -p")
-   if devdir != "/Library/Developer/CommandLineTools":
-       ver = _popen("xcodebuild -version")
-       exp = re.compile(r'Xcode (\d+\.\d+)')
-       vernum = exp.match(ver)
-       if vernum:
-           _xcode_ver = float(vernum.group(1))
-           if _xcode_ver < 5.0:
-               raise EnvironmentError("Xcode Version %f is not supported; if you want to build with Xcode versions earlier than 5.0 checkout tag Last-Lion." % _xcode_ver)
-           return _xcode_ver
-       else:
-           raise EnvironmentError("No suitable Xcode found. Xcode 5.0 or later is required.")
-   else: #Command-Line Tools instead of Xcode
-       ver_str = _popen("pkgutil --pkg-info=com.apple.pkg.CLTools_Executables | grep version*")
-       print "Found Command Line Tools '%s'" % ver_str
-       exp = re.compile(r'version: (\d+\.\d+)')
-       vernum = exp.match(ver_str)
-       if vernum:
-           print "Command Line Tools version %f" % float(vernum.group(1))
-           return float(vernum.group(1))
-       else:
-           return 8.0
 
 # Some utitily functions used here and in custom files:
 #
@@ -190,9 +149,6 @@ def setup_release():
 # Set up the environment for building against particular SDK.
 #
 
-#We call osx_ver() here so that we can set up _default_arch for setup_sdk:
-osx_ver()
-
 #
 # This is the workhorse of the setup. Call this function from
 # .jhbuildrc-custom to configure compile and link flags. Optionally
@@ -214,16 +170,16 @@ def setup_sdk(target=_target, sdk_version=None, architectures=[_default_arch]):
     xcodeversion = None
 
 
-    sdkdir = _popen("xcrun --show-sdk-path")
+    sdkdir = "/usr/local/osx-ndk-x86"
 
     if sdkdir:
-        environ_prepend("LDFLAGS", "-L" + sdkdir + "/usr/lib")
-        environ_prepend("CFLAGS", "-I" + sdkdir + "/usr/include")
-        environ_prepend("CXXFLAGS", "-I" + sdkdir + "/usr/include")
-        environ_prepend("OBJCFLAGS", "-I" + sdkdir + "/usr/include")
-        environ_prepend("CPPFLAGS", "-I" + sdkdir + "/usr/include")
-        environ_prepend("CMAKE_PREFIX_PATH", os.path.join(sdkdir, 'usr'), ':')
-        environ_prepend("LIBRARY_PATH", sdkdir + "/usr/lib", ':')
+        environ_prepend("LDFLAGS", "-L" + sdkdir + "/lib")
+        environ_prepend("CFLAGS", "-I" + sdkdir + "/include")
+        environ_prepend("CXXFLAGS", "-I" + sdkdir + "/include")
+        environ_prepend("OBJCFLAGS", "-I" + sdkdir + "/include")
+        environ_prepend("CPPFLAGS", "-I" + sdkdir + "/include")
+        environ_prepend("CMAKE_PREFIX_PATH", os.path.join(sdkdir), ':')
+        environ_prepend("LIBRARY_PATH", sdkdir + "/lib", ':')
 
         # It's often necessary to look for things in the SDK when
         # developing, and it takes a lot of typing, so define a
@@ -241,25 +197,17 @@ def setup_sdk(target=_target, sdk_version=None, architectures=[_default_arch]):
         environ_append("LDFLAGS", "-isysroot " + sdkdir)
 
         # To pick up cups-config from the right place.
-        os.environ["CUPS_CONFIG"] = os.path.join(sdkdir, "usr/bin/cups-config")
+        #os.environ["CUPS_CONFIG"] = os.path.join(sdkdir, "usr/bin/cups-config")
 
-    if architectures == ["i386"]:
-        # The '#' on openssl is to stop jhbuild from appending any more autogen
-        # arguments such as --disable-Werror; they cause openssl to error out
-        append_autogenargs("openssl", "darwin-i386-cc #")
-    elif architectures == ["x86_64"]:
-        conditions.add('64-bit')
-        append_autogenargs("glib", "ac_cv_c_bigendian=no")
-        append_autogenargs("openssl", "darwin64-x86_64-cc #")
-    elif len(set(architectures) - set(["i386",  "x86_64"])) > 0:
-        raise EnvironmentError("Only architectures i386 and x86_64 are supported.")
-    else:
-        print "WARNING: Universal builds are neither prohibited nor supported. It might work, but if it doesn't you're on your own."
+    conditions.add('64-bit')
+    append_autogenargs("glib", "ac_cv_c_bigendian=no")
+    append_autogenargs("openssl", "x86_64-apple-darwin15-gcc #")
+    
     # For unknown reasons, iconv is not picked up correctly without this
     #
-    gcc = _popen("xcrun -f gcc")
-    gpp = _popen("xcrun -f g++")
-    ld = _popen("xcrun -f ld")
+    gcc = "/usr/local/osx-ndk-x86/bin/x86_64-apple-darwin15-gcc"
+    gpp = "/usr/local/osx-ndk-x86/bin/x86_64-apple-darwin15-g++"
+    ld = "/usr/local/osx-ndk-x86/bin/x86_64-apple-darwin15-ld"
     os.environ["CC"] = gcc
     os.environ["OBJC"] = gcc
     os.environ["CXX"] = gpp
@@ -276,25 +224,10 @@ def setup_sdk(target=_target, sdk_version=None, architectures=[_default_arch]):
     # For intel, set glib's build parameter so that it builds the
     # correct atomic asm functions
     #
-    if architectures == ["i386"]:
-        append_autogenargs("glib", "--build=i486-apple-darwin")
-        append_autogenargs("gmp", "ABI=32")
-        append_autogenargs("liboil", "--host=i486-apple-darwin")
-        append_autogenargs("gnutls", "--host=i486-apple-darwin")
-    elif architectures == ["x86_64"]:
-        append_autogenargs("glib", "--build=x86_64-apple-darwin")
-        append_autogenargs("gmp", "--host=x86_64-apple-darwin ABI=64")
-        append_autogenargs("liboil", "--host=x86_64-apple-darwin")
-        append_autogenargs("gnutls", "--host=x86_64-apple-darwin")
-
-    # El Capitan needs bash to work around SIP. If you're using a
-    # common bootstrap directory (e.g. $HOME/.local) then override
-    # CONFIG_SHELL in .jhbuildrc-custom after calling setup_sdk().
-    config_shell = os.path.join(prefix, 'bin', 'bash')
-    if _osx_version < 11.0:
-        skip.append('bash')
-    elif os.path.exists(config_shell):
-        os.environ['CONFIG_SHELL'] = config_shell
+    append_autogenargs("glib", "--build=x86_64-apple-darwin")
+    append_autogenargs("gmp", "--host=x86_64-apple-darwin ABI=64")
+    append_autogenargs("liboil", "--host=x86_64-apple-darwin")
+    append_autogenargs("gnutls", "--host=x86_64-apple-darwin")
 
     if not sdkdir:
         sdkdir = '/'
@@ -304,12 +237,12 @@ def setup_sdk(target=_target, sdk_version=None, architectures=[_default_arch]):
     # gettext-fw rebuilds gettext with an in-tree libiconv to get
     # around the Apple-provided one not defining _libiconv_init for
     # x86_64
-    append_autogenargs("gettext-fw", "--with-libiconv-prefix=" + prefix)
+    #append_autogenargs("gettext-fw", "--with-libiconv-prefix=" + prefix)
 
-    environ_append("CFLAGS", "-mmacosx-version-min=" + target)
-    environ_append("CXXFLAGS", "-mmacosx-version-min=" + target)
-    environ_append("OBJCFLAGS", "-mmacosx-version-min=" + target)
-    environ_append("LDFLAGS", "-mmacosx-version-min=" + target)
+    #environ_append("CFLAGS", "-mmacosx-version-min=" + target)
+    #environ_append("CXXFLAGS", "-mmacosx-version-min=" + target)
+    #environ_append("OBJCFLAGS", "-mmacosx-version-min=" + target)
+    #environ_append("LDFLAGS", "-mmacosx-version-min=" + target)
 
     #Overcome Python's obnoxious misconfiguration of portable builds
     if len(architectures) == 1:
@@ -342,7 +275,7 @@ def setup_sdk(target=_target, sdk_version=None, architectures=[_default_arch]):
 
     # Make sure we don't link against XQuartz whose freetype-config is on PATH
     # when XQuartz is installed by removing it from PATH
-    environ_remove('PATH', '/opt/X11/bin')
+    #environ_remove('PATH', '/opt/X11/bin')
     return sdkdir
 
 
@@ -378,9 +311,9 @@ autogenargs=''
 # Use the included install-check program if available. It won't update
 # timestamps if the header hasn't changed, which speeds up builds.
 #
-_path = os.path.expanduser('~/.local/bin/install-check')
-if os.path.exists(_path):
-    os.environ['INSTALL'] = _path
+#_path = os.path.expanduser('~/.local/bin/install-check')
+#if os.path.exists(_path):
+#    os.environ['INSTALL'] = _path
 
 _gtk_osx_prompt_prefix = "JH"
 
@@ -388,9 +321,9 @@ _gtk_osx_default_build = ""
 
 #print "Default Architecture %s\n" % _default_arch
 
-if _osx_version < 8.0:
-    print "Error: Mac OS X 10.8 or newer is required, exiting."
-    raise SystemExit
+#if _osx_version < 8.0:
+#    print "Error: Mac OS X 10.8 or newer is required, exiting."
+#    raise SystemExit
 
 ###### Import Customizations ######
 
