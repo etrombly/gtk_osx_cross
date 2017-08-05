@@ -213,6 +213,12 @@ def setup_sdk(target=_target, sdk_version=None, architectures=[_default_arch]):
     os.environ["CXX"] = gpp
     os.environ['LD'] = ld
 
+    environ_prepend("CFLAGS", "--target=x86_64-apple-darwin ")
+    environ_prepend("CXXFLAGS", "--target=x86_64-apple-darwin ")
+    environ_prepend("CPPFLAGS", "--target=x86_64-apple-darwin ")
+    environ_prepend("OBJCFLAGS", "--target=x86_64-apple-darwin ")
+    environ_prepend("LDFLAGS", "--target=x86_64-apple-darwin ")
+    
     # Set the -arch flags for everything we're building.
     #
     for arch in architectures:
@@ -225,9 +231,9 @@ def setup_sdk(target=_target, sdk_version=None, architectures=[_default_arch]):
     # correct atomic asm functions
     #
     append_autogenargs("glib", "--build=x86_64-apple-darwin")
-    append_autogenargs("gmp", "--host=x86_64-apple-darwin ABI=64")
-    append_autogenargs("liboil", "--host=x86_64-apple-darwin")
-    append_autogenargs("gnutls", "--host=x86_64-apple-darwin")
+    append_autogenargs("gmp", "--target=x86_64-apple-darwin ABI=64")
+    #append_autogenargs("liboil", "--target=x86_64-apple-darwin")
+    #append_autogenargs("gnutls", "--target=x86_64-apple-darwin")
 
     if not sdkdir:
         sdkdir = '/'
