@@ -212,12 +212,6 @@ def setup_sdk(target=_target, sdk_version=None, architectures=[_default_arch]):
     os.environ["OBJC"] = gcc
     os.environ["CXX"] = gpp
     os.environ['LD'] = ld
-
-    environ_prepend("CFLAGS", "--host=x86_64-linux-gnu-gcc --target=x86_64-apple-darwin ")
-    environ_prepend("CXXFLAGS", "--host=x86_64-linux-gnu-gcc --target=x86_64-apple-darwin ")
-    environ_prepend("CPPFLAGS", "--host=x86_64-linux-gnu-gcc --target=x86_64-apple-darwin ")
-    environ_prepend("OBJCFLAGS", "--host=x86_64-linux-gnu-gcc --target=x86_64-apple-darwin ")
-    environ_prepend("LDFLAGS", "--host=x86_64-linux-gnu-gcc --target=x86_64-apple-darwin ")
     
     # Set the -arch flags for everything we're building.
     #
@@ -230,6 +224,7 @@ def setup_sdk(target=_target, sdk_version=None, architectures=[_default_arch]):
     # For intel, set glib's build parameter so that it builds the
     # correct atomic asm functions
     #
+    append_autogenargs("xz", "--host=x86_64-unknown-linux-gnu --build=x86_64-apple-darwin")
     append_autogenargs("glib", "--build=x86_64-apple-darwin")
     append_autogenargs("gmp", "--target=x86_64-apple-darwin ABI=64")
     #append_autogenargs("liboil", "--target=x86_64-apple-darwin")
