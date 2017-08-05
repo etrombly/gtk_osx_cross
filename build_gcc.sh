@@ -68,6 +68,7 @@ fi
 if [ $(osxcross-cmp $GCC_VERSION '==' 6.3.0) == 1 ]; then
     # https://gcc.gnu.org/viewcvs/gcc/trunk/gcc/config/darwin-driver.c?r1=244010&r2=244009&pathrev=244010
     patch -p1 < $PATCH_DIR/darwin-driver.c.patch
+    patch -p1 < $PATCH_DIR/ubsan.c.patch
 fi
 
 mkdir -p build
