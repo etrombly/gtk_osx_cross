@@ -173,13 +173,13 @@ def setup_sdk(target=_target, sdk_version=None, architectures=[_default_arch]):
     sdkdir = "/usr/local/osx-ndk-x86/SDK/MacOSX10.11.sdk"
 
     if sdkdir:
-        environ_prepend("LDFLAGS", "-L" + sdkdir + "/lib")
-        environ_prepend("CFLAGS", "-I" + sdkdir + "/include")
-        environ_prepend("CXXFLAGS", "-I" + sdkdir + "/include")
-        environ_prepend("OBJCFLAGS", "-I" + sdkdir + "/include")
-        environ_prepend("CPPFLAGS", "-I" + sdkdir + "/include")
+        environ_prepend("LDFLAGS", "-L" + sdkdir + "/usr/lib")
+        environ_prepend("CFLAGS", "-I" + sdkdir + "/usr/include")
+        environ_prepend("CXXFLAGS", "-I" + sdkdir + "/usr/include")
+        environ_prepend("OBJCFLAGS", "-I" + sdkdir + "/usr/include")
+        environ_prepend("CPPFLAGS", "-I" + sdkdir + "/usr/include")
         environ_prepend("CMAKE_PREFIX_PATH", os.path.join(sdkdir), ':')
-        environ_prepend("LIBRARY_PATH", sdkdir + "/lib", ':')
+        environ_prepend("LIBRARY_PATH", sdkdir + "/usr/lib", ':')
 
         # It's often necessary to look for things in the SDK when
         # developing, and it takes a lot of typing, so define a
