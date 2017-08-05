@@ -170,7 +170,7 @@ def setup_sdk(target=_target, sdk_version=None, architectures=[_default_arch]):
     xcodeversion = None
 
 
-    sdkdir = "/usr/local/osx-ndk-x86/x86_64-apple-darwin15"
+    sdkdir = "/usr/local/osx-ndk-x86/SDK/MacOSX10.11.sdk"
 
     if sdkdir:
         environ_prepend("LDFLAGS", "-L" + sdkdir + "/lib")
