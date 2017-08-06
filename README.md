@@ -14,9 +14,6 @@ install osxcross (modified from osxcross-git aur package)
 
 build gcc (can skip if not building gtk)
 
-    copy ubsan.c.patch to patches
-    copy build_gcc.sh to .
-
     GCC_VERSION=6.3.0 ./build_gcc.sh
 
 install osxcross
@@ -45,11 +42,11 @@ to cross compile a console program
 now install jhbuild
 
     pacaur -S jhbuild
+    mkdir -p $HOME/jhbuild/modulesets
+    cp jhbuildrc ~/.jhbuildrc    
 
 install gtk
 
-    ./gtk-osx-build-setup.sh
-    cp jhbuildrc ~/.jhbuildrc
     jhbuild shell
     export PATH=/usr/local/osx-ndk-x86/bin:$PATH
     
