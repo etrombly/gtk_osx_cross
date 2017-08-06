@@ -27,7 +27,7 @@ import re
 #some variables we'll need defined later
 _default_arch = "x86_64"
 _osx_version = 0.0
-_target = '10.8'
+_target = '10.7'
 
 def _popen(cmd_arg):
     from subprocess import Popen, PIPE
@@ -205,9 +205,9 @@ def setup_sdk(target=_target, sdk_version=None, architectures=[_default_arch]):
     
     # For unknown reasons, iconv is not picked up correctly without this
     #
-    gcc = "/usr/local/osx-ndk-x86/bin/x86_64-apple-darwin15-gcc"
-    gpp = "/usr/local/osx-ndk-x86/bin/x86_64-apple-darwin15-g++"
-    ld = "/usr/local/osx-ndk-x86/bin/x86_64-apple-darwin15-ld"
+    gcc = "x86_64-apple-darwin15-gcc"
+    gpp = "x86_64-apple-darwin15-g++"
+    ld = "x86_64-apple-darwin15-ld"
     os.environ["CC"] = gcc
     os.environ["OBJC"] = gcc
     os.environ["CXX"] = gpp
