@@ -43,7 +43,8 @@ now install jhbuild
 
     pacaur -S jhbuild
     mkdir -p $HOME/jhbuild/modulesets
-    cp jhbuildrc ~/.jhbuildrc    
+
+cp jhbuildrc from this repo to ~/.jhbuildrc    
 
 install gtk
 
@@ -53,5 +54,7 @@ install gtk
     # hack, need to find a better way to do this
     ln -s /usr/local/osx-ndk-x86/SDK/MacOSX10.11.sdk/System /System
     
-    jhbuild bootstrap #will fail
+    jhbuild bootstrap 
+    # the bootstrap will fail because the linker says -m is deprecated, will need to do the next step for each library....so would need to automate it
     edit ~/gtk/source/xz-5.2.3/configure, delete "-m elf_x86_64" from linker config
+    # links after this but can't find the .o file, haven't figured out why yet
