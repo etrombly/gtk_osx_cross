@@ -1,8 +1,6 @@
 # gtk_osx_cross
 scripts to setup gtk to cross compile from linux
 
-clone this repo first, ubsan.c.patch, build_gcc.sh, gtk-osx-build-setup.sh, and jhbuildrc are needed in the following steps.
-
 install osxcross (modified from osxcross-git aur package)
 
     git clone https://github.com/tpoechtrager/osxcross
@@ -39,12 +37,11 @@ to cross compile a console program
 
 # try to get gtk to compile
 
-now install jhbuild
+now install jhbuild, clone this repo first gtk-osx-build-setup.sh, and jhbuildrc are needed in the following steps.
 
     pacaur -S jhbuild
-    mkdir -p $HOME/jhbuild/modulesets
-
-cp jhbuildrc from this repo to ~/.jhbuildrc    
+    bash gtk-osx-build-setup.sh
+    cp jhbuildrc ~/.jhbuildrc    
 
 install gtk
 
@@ -55,7 +52,8 @@ install gtk
     ln -s /usr/local/osx-ndk-x86/SDK/MacOSX10.11.sdk/System /System
     
     jhbuild bootstrap 
-    # the bootstrap will fail because the linker says -m is deprecated, will need to do the next step for each library....so would need to automate it
-    edit ~/gtk/source/xz-5.2.3/configure, delete "-m elf_x86_64" from linker config
+    # the bootstrap will fail because the linker says -m is deprecated, will probably need to do the next step for each library
+    sed -i -e 's|-m elf_x86_64||g' ~/gtk/source/xz-5.2.3/configure
+    ~/.cache/jhbuild/build/xz-5.2.3/libtool set line 109 max_cmd_len=255
     jhbuild bootstrap #again
-    # links after this but can't find the .o file, haven't figured out why yet
+    # links after this but can't find the liblzma.so file, the build script tries to link it to liblzma.so.5.2.3, but it looks like it's never actually creating it 

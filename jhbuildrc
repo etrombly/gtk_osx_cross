@@ -208,10 +208,18 @@ def setup_sdk(target=_target, sdk_version=None, architectures=[_default_arch]):
     gcc = "x86_64-apple-darwin15-gcc"
     gpp = "x86_64-apple-darwin15-g++"
     ld = "x86_64-apple-darwin15-ld"
+    ar = "x86_64-apple-darwin15-ar"
+    ranlib = "x86_64-apple-darwin15-ranlib"
+    nm = "x86_64-apple-darwin15-nm"
     os.environ["CC"] = gcc
     os.environ["OBJC"] = gcc
     os.environ["CXX"] = gpp
     os.environ['LD'] = ld
+    os.environ['AR'] = ar
+    os.environ['AS'] = "x86_64-apple-darwin15-as"
+    os.environ['RANLIB'] = ranlib
+    os.environ['NM'] = nm
+    os.environ['STRIP'] = "x86_64-apple-darwin15-strip"
     
     # Set the -arch flags for everything we're building.
     #
@@ -393,8 +401,8 @@ os.environ['JHBUILD_SOURCE'] = checkoutroot
 #os.environ['LIBTOOLIZE'] = _exec_prefix + '/bin/libtoolize'
 #Some autogens detect that it's a Mac and use glibtoolize if it's
 #available. Override this behavior.
-if not (os.environ.has_key ("LIBTOOLIZE") and os.environ["LIBTOOLIZE"]):
-    environ_append('LIBTOOLIZE', os.path.join(prefix, "bin", "libtoolize"))
+#if not (os.environ.has_key ("LIBTOOLIZE") and os.environ["LIBTOOLIZE"]):
+#    environ_append('LIBTOOLIZE', os.path.join(prefix, "bin", "libtoolize"))
 
 
 # The option "headerpad_max_install_names" is there to leave some room for
