@@ -57,4 +57,5 @@ install gtk
     jhbuild bootstrap 
     # the bootstrap will fail because the linker says -m is deprecated, will need to do the next step for each library....so would need to automate it
     edit ~/gtk/source/xz-5.2.3/configure, delete "-m elf_x86_64" from linker config
+    jhbuild bootstrap #again
     # links after this but can't find the .o file, haven't figured out why yet
